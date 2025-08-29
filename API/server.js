@@ -12,14 +12,8 @@ app.use(express.json());
 // Rutas base
 app.get("/", (_req, res) => res.send("Hello World!"));
 
-// Opción A (recomendada): montar router bajo /juegos
 app.use("/juegos", juegosRouter);
 
-// Opción B (si querés mantener /juegos-many exactamente igual):
-// const { crearMuchosJuegos } = require("./controllers/juegos.controller");
-// app.post("/juegos-many", crearMuchosJuegos);
-
-// Middleware simple de errores (para no tronar feo)
 app.use((err, _req, res, _next) => {
   console.error(err);
   res.status(500).json({ error: "Error del servidor", detalle: err.message });
