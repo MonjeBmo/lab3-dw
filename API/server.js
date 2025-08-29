@@ -23,7 +23,16 @@ app.post('/juegos', async (req, res) => {
     res.status(201).json(nuevoJuego);
 });
 
+app.post('/juegos-many', async (req, res) => {
+    const juegos = await Juego.insertMany(req.body);
+    res.status(201).json(juegos);
+});
 
+app.delete('/juegos/:id', async (req, res) => {
+    const { id } = req.params;
+    await Juego.findByIdAndDelete(id);
+    res.status(204).end();
+});
 
 
 app.listen(4000, () => {
