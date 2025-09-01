@@ -1,7 +1,7 @@
 // server.js
 const express = require("express");
 const cors = require("cors");
-const postsRouter = require("./routes/posts.routes"); // 🚀 ahora usamos posts
+const postsRouter = require("./routes/post.routes"); // 🚀 ahora usamos posts
 // si tu conn.js inicializa la conexión a Mongo, con importarlo basta
 require("./conn");
 
