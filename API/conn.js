@@ -1,16 +1,20 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/juegosdb', {
+mongoose.connect('mongodb://localhost:27017/blogdb', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
 
-const juegoSchema = new mongoose.Schema({
-    titulo: String,
-    genero: String,
-    anio: Number
+// Definimos el esquema para artículos del blog
+const postSchema = new mongoose.Schema({
+    titulo: { type: String, required: true },
+    contenido: { type: String, required: true },
+    autor: { type: String, required: true },
+    fecha: { type: Date, default: Date.now },
+    etiquetas: [String] // opcional, para categorías/tags
 });
 
-const Juego = mongoose.model('Juego', juegoSchema);
+// Creamos el modelo basado en el esquema
+const Post = mongoose.model('Post', postSchema);
 
-module.exports = { Juego };
+module.exports = { Post };

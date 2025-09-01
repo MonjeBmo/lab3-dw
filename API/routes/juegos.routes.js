@@ -1,18 +1,22 @@
-// routes/juegos.routes.js
+// routes/posts.routes.js
 const { Router } = require("express");
 const {
-  listarJuegos,
-  crearJuego,
-  crearMuchosJuegos,
-  borrarJuego,
-} = require("../controllers/juegos.controller");
+  listarPosts,
+  obtenerPost,
+  crearPost,
+  crearMuchosPosts,
+  actualizarPost,
+  borrarPost,
+} = require("../controllers/posts.controller");
 
 const router = Router();
 
-// Base: /juegos
-router.get("/", listarJuegos);
-router.post("/", crearJuego);
-router.post("/many", crearMuchosJuegos); // opcional: /juegos/many
-router.delete("/:id", borrarJuego);
+// Base: /posts
+router.get("/", listarPosts);         // GET todos los posts (con búsqueda/paginación opcional)
+router.get("/:id", obtenerPost);      // GET un post específico
+router.post("/", crearPost);          // POST crear un post
+router.post("/many", crearMuchosPosts); // POST crear muchos posts de un jalón
+router.put("/:id", actualizarPost);   // PUT actualizar un post
+router.delete("/:id", borrarPost);    // DELETE eliminar un post
 
 module.exports = router;
