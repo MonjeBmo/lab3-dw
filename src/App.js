@@ -2,22 +2,23 @@ import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
 
 export default function App() {
-  const [juego, setJuego] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
 
-  // UI: búsqueda, filtro, orden
+  // UI: búsqueda, filtro por autor, orden
   const [q, setQ] = useState("");
-  const [genero, setGenero] = useState("todos");
+  const [autor, setAutor] = useState("todos");
   const [orden, setOrden] = useState("recientes");
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("http://localhost:4000/juegos");
+        const res = await fetch("http://localhost:4000/posts");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        setJuego(data || []);
+        // si el backend devuelve {items: [...]}, ajustamos
+        setPosts(data.items || data || []);
       } catch (e) {
         setErr(e.message || "Error desconocido");
       } finally {
@@ -27,65 +28,76 @@ export default function App() {
     load();
   }, []);
 
-  // Sacar géneros únicos para el <select>
-  const generos = useMemo(() => {
-    const g = Array.from(new Set(juego.map((j) => j.genero).filter(Boolean)));
-    return g.sort((a, b) => a.localeCompare(b));
-  }, [juego]);
+  // Sacar autores únicos para el <select>
+  const autores = useMemo(() => {
+    const a = Array.from(new Set(posts.map((p) => p.autor).filter(Boolean)));
+    return a.sort((x, y) => x.localeCompare(y));
+  }, [posts]);
 
   // Derivar lista visible según búsqueda/filtro/orden
   const visible = useMemo(() => {
-    let list = [...juego];
+    let list = [...posts];
 
     if (q.trim()) {
       const term = q.toLowerCase();
       list = list.filter(
-        (j) =>
-          (j.titulo || "").toLowerCase().includes(term) ||
-          (j.genero || "").toLowerCase().includes(term) ||
-          String(j.anio || "").includes(term)
+        (p) =>
+          (p.titulo || "").toLowerCase().includes(term) ||
+          (p.contenido || "").toLowerCase().includes(term) ||
+          (p.autor || "").toLowerCase().includes(term) ||
+          (p.etiquetas || []).some((et) =>
+            (et || "").toLowerCase().includes(term)
+          )
       );
     }
 
-    if (genero !== "todos") {
-      list = list.filter((j) => (j.genero || "").toLowerCase() === genero.toLowerCase());
+    if (autor !== "todos") {
+      list = list.filter(
+        (p) => (p.autor || "").toLowerCase() === autor.toLowerCase()
+      );
     }
 
     if (orden === "recientes") {
-      list.sort((a, b) => (b.anio || 0) - (a.anio || 0));
+      list.sort(
+        (a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0)
+      );
     } else if (orden === "antiguos") {
-      list.sort((a, b) => (a.anio || 0) - (b.anio || 0));
+      list.sort(
+        (a, b) => new Date(a.fecha || 0) - new Date(b.fecha || 0)
+      );
     } else {
-      list.sort((a, b) => (a.titulo || "").localeCompare(b.titulo || ""));
+      list.sort((a, b) =>
+        (a.titulo || "").localeCompare(b.titulo || "")
+      );
     }
 
     return list;
-  }, [juego, q, genero, orden]);
+  }, [posts, q, autor, orden]);
 
   return (
     <div className="page">
       <header className="hero">
         <div className="hero__content">
-          <h1>🎮 Colección de Juegos</h1>
-          <p>Consulta rápida, filtros y vista bonita pa’ que no se mire feito.</p>
+          <h1>Blog</h1>
+          <p>Consulta rápida de artículos, con filtros y búsqueda.</p>
 
           <div className="controls">
             <input
               className="control control--input"
-              placeholder="Buscar por título, género o año..."
+              placeholder="Buscar por título, contenido, autor o etiquetas..."
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
 
             <select
               className="control"
-              value={genero}
-              onChange={(e) => setGenero(e.target.value)}
+              value={autor}
+              onChange={(e) => setAutor(e.target.value)}
             >
-              <option value="todos">Todos los géneros</option>
-              {generos.map((g) => (
-                <option key={g} value={g}>
-                  {g}
+              <option value="todos">Todos los autores</option>
+              {autores.map((a) => (
+                <option key={a} value={a}>
+                  {a}
                 </option>
               ))}
             </select>
@@ -118,7 +130,7 @@ export default function App() {
 
         {!loading && err && (
           <div className="alert alert--error">
-            <strong>¡Púchica!</strong> No se pudo cargar: {err}
+            <strong>Error</strong> No se pudo cargar: {err}
           </div>
         )}
 
@@ -130,26 +142,35 @@ export default function App() {
 
             {visible.length === 0 ? (
               <div className="empty">
-                <span>😶‍🌫️</span>
-                <p>No hay nada que coincida con tu búsqueda.</p>
+                <p>No hay publicaciones que coincidan con tu búsqueda.</p>
               </div>
             ) : (
               <ul className="grid">
-                {visible.map((j) => (
-                  <li key={j._id} className="card">
+                {visible.map((p) => (
+                  <li key={p._id} className="card">
                     <div className="card__header">
-                      <h3 className="card__title">{j.titulo}</h3>
-                      <span className="badge">{j.anio ?? "s/f"}</span>
+                      <h3 className="card__title">{p.titulo}</h3>
+                      <span className="badge">
+                        {p.fecha
+                          ? new Date(p.fecha).toLocaleDateString()
+                          : "s/f"}
+                      </span>
                     </div>
                     <p className="muted">
-                      Género: <strong>{j.genero || "—"}</strong>
+                      Autor: <strong>{p.autor || "Desconocido"}</strong>
                     </p>
-
-                    {/* Si algún día agregás portada: j.portadaUrl */}
+                    <p className="excerpt">
+                      {(p.contenido || "").substring(0, 120)}...
+                    </p>
+                    <p className="tags">
+                      {(p.etiquetas || []).join(", ")}
+                    </p>
                     <div className="card__footer">
                       <button
                         className="btn"
-                        onClick={() => alert(`Más info de: ${j.titulo}`)}
+                        onClick={() =>
+                          alert(`Detalles del post: ${p.titulo}`)
+                        }
                       >
                         Ver detalles
                       </button>
@@ -161,10 +182,6 @@ export default function App() {
           </>
         )}
       </main>
-
-      {/* <footer className="footer">
-        Hecho con cariño chapín 👊
-      </footer> */}
     </div>
   );
 }
