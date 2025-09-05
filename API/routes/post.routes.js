@@ -7,7 +7,7 @@ const {
   actualizarPost,
   borrarPost,
 } = require("../controllers/posts.controller");
-const { upload } = require("../middlewares/upload"); // <-- NUEVO
+const { upload } = require("../helpers/uploads"); // <-- NUEVO
 
 const router = Router();
 

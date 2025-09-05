@@ -179,3 +179,75 @@ body{
 @media (max-width: 768px){
   .controls{ grid-template-columns: 1fr; }
 }
+
+/* toolbar a la par del select de orden */
+.toolbar { display:flex; gap:12px; align-items:center; }
+
+/* mini acciones por card */
+.actions { display:flex; gap:10px; margin-top:8px; }
+
+/* variantes del botón */
+.btn--ghost{
+  background: transparent;
+  color: var(--brand);
+  border-color: rgba(37,99,235,0.35);
+}
+.btn--ghost:hover{ box-shadow: var(--ring); background: rgba(37,99,235,0.06); }
+.btn--danger{ background: var(--err); }
+.btn--new{ white-space: nowrap; }
+
+/* imagen de la card */
+.thumb{
+  width:100%;
+  aspect-ratio: 16/9;
+  overflow:hidden;
+  border-radius: 12px;
+  background: #f1f5f9;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.thumb img{ width:100%; height:100%; object-fit: cover; display:block; }
+.thumb--small{ width:160px; aspect-ratio: 16/10; }
+
+/* modal */
+.modal{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35);
+  display:flex; align-items:center; justify-content:center;
+  padding: 20px;
+  z-index: 50;
+}
+.modal__panel{
+  width: min(780px, 100%);
+  background: var(--card);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  padding: 14px 14px 16px;
+}
+.modal__head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 6px 6px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.modal__title{ margin:0; }
+.iconbtn{
+  appearance:none; border:0; background:transparent; cursor:pointer;
+  font-size: 18px; line-height: 1; padding: 6px 10px; border-radius: 8px;
+}
+.iconbtn:hover{ background: rgba(0,0,0,0.06); }
+
+.form{ padding: 12px 6px 0; display: grid; gap: 12px; }
+.label{ display:grid; gap: 6px; }
+.fileline{ display:flex; align-items:center; gap: 12px; }
+.filelabel input[type="file"]{ display:block; }
+
+.checkline{
+  display:flex; align-items:center; gap: 10px;
+  background: var(--panel); padding: 10px 12px; border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.12);
+}
+
+.modal__foot{
+  display:flex; justify-content:flex-end; gap: 10px;
+  padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.08);
+}
