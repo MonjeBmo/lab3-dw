@@ -73,11 +73,22 @@ async function crearPost(req, res) {
       });
     }
 
+    // Si viene archivo (multer lo coloca en req.file)
+    let imagen_url = null, imagen_mime = null, imagen_nom = null;
+    if (req.file) {
+      imagen_url  = `/uploads/${req.file.filename}`;
+      imagen_mime = req.file.mimetype;
+      imagen_nom  = req.file.originalname;
+    }
+
     const nuevoPost = new Post({
       titulo,
       contenido,
       autor,
       etiquetas: Array.isArray(etiquetas) ? etiquetas : [],
+      imagen_url,
+      imagen_mime,
+      imagen_nom,
     });
 
     await nuevoPost.save();
@@ -89,6 +100,7 @@ async function crearPost(req, res) {
     });
   }
 }
+
 
 // POST /posts-many
 async function crearMuchosPosts(req, res) {
@@ -139,7 +151,7 @@ async function crearMuchosPosts(req, res) {
 async function actualizarPost(req, res) {
   try {
     const { id } = req.params;
-    const { titulo, contenido, autor, etiquetas } = req.body;
+    const { titulo, contenido, autor, etiquetas, borrar_imagen } = req.body;
 
     const datos = {};
     if (titulo !== undefined) datos.titulo = titulo;
@@ -153,6 +165,20 @@ async function actualizarPost(req, res) {
         });
       }
       datos.etiquetas = etiquetas;
+    }
+
+    // Si suben nueva imagen, reemplazamos campos
+    if (req.file) {
+      datos.imagen_url  = `/uploads/${req.file.filename}`;
+      datos.imagen_mime = req.file.mimetype;
+      datos.imagen_nom  = req.file.originalname;
+    }
+
+    // Permite borrar imagen enviando borrar_imagen=true
+    if (borrar_imagen === "true" || borrar_imagen === true) {
+      datos.imagen_url = null;
+      datos.imagen_mime = null;
+      datos.imagen_nom = null;
     }
 
     const actualizado = await Post.findByIdAndUpdate(id, datos, {
@@ -175,6 +201,7 @@ async function actualizarPost(req, res) {
     });
   }
 }
+
 
 // DELETE /posts/:id
 async function borrarPost(req, res) {

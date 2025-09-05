@@ -1,4 +1,3 @@
-// routes/posts.routes.js
 const { Router } = require("express");
 const {
   listarPosts,
@@ -8,15 +7,22 @@ const {
   actualizarPost,
   borrarPost,
 } = require("../controllers/posts.controller");
+const { upload } = require("../middlewares/upload"); // <-- NUEVO
 
 const router = Router();
 
-// Base: /posts
-router.get("/", listarPosts);         // GET todos los posts (con búsqueda/paginación opcional)
-router.get("/:id", obtenerPost);      // GET un post específico
-router.post("/", crearPost);          // POST crear un post
-router.post("/many", crearMuchosPosts); // POST crear muchos posts de un jalón
-router.put("/:id", actualizarPost);   // PUT actualizar un post
-router.delete("/:id", borrarPost);    // DELETE eliminar un post
+router.get("/", listarPosts);
+router.get("/:id", obtenerPost);
+
+// Para crear con imagen (campo form-data: "imagen")
+router.post("/", upload.single("imagen"), crearPost);
+
+// Para crear muchos SIN imagen (o podrías armar otra estrategia por item)
+router.post("/many", crearMuchosPosts);
+
+// Actualizar con opción de nueva imagen (campo "imagen")
+router.put("/:id", upload.single("imagen"), actualizarPost);
+
+router.delete("/:id", borrarPost);
 
 module.exports = router;
