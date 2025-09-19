@@ -2,7 +2,8 @@
 const express = require("express");
 const cors = require("cors");
 const postsRouter = require("./routes/post.routes"); // 🚀 ahora usamos posts
-// si tu conn.js inicializa la conexión a Mongo, con importarlo basta
+const usersRouter = require("./routes/user.routes")
+const authMiddle = require("./middleware/auth")
 require("./conn");
 const path = require("path");
 
@@ -15,8 +16,9 @@ app.use(express.json());
 // Rutas base
 app.get("/", (_req, res) => res.send("API de Blog funcionando 🚀"));
 
+app.use("/users", usersRouter)
 // Rutas de posts
-app.use("/posts", postsRouter);
+app.use("/posts", authMiddle, postsRouter);
 // sirve archivos estáticos de /uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

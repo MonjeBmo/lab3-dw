@@ -1,20 +1,21 @@
 // controllers/posts.controller.js
 const { Post } = require("../conn");
+const validator = require("validator");
 
 // GET /posts  (opcional: ?page=1&limit=20&q=texto)
 async function listarPosts(req, res) {
   try {
-    const page  = Math.max(parseInt(req.query.page) || 1, 1);
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
-    const q     = (req.query.q || "").trim();
+    const q = (req.query.q || "").trim();
 
     // Filtro de búsqueda simple por título, contenido o etiquetas
     const filter = q
       ? {
           $or: [
-            { titulo:   { $regex: q, $options: "i" } },
-            { contenido:{ $regex: q, $options: "i" } },
-            { etiquetas:{ $elemMatch: { $regex: q, $options: "i" } } },
+            { titulo: { $regex: q, $options: "i" } },
+            { contenido: { $regex: q, $options: "i" } },
+            { etiquetas: { $elemMatch: { $regex: q, $options: "i" } } },
           ],
         }
       : {};
@@ -73,12 +74,60 @@ async function crearPost(req, res) {
       });
     }
 
+    if (validator.isEmpty(titulo || "")) {
+      return res
+        .status(400)
+        .json({
+          error: "Datos inválidos",
+          detalle: "El título no puede estar vacío",
+        });
+    }
+    if (validator.isEmpty(contenido || "")) {
+      return res
+        .status(400)
+        .json({
+          error: "Datos inválidos",
+          detalle: "El contenido no puede estar vacío",
+        });
+    }
+    if (validator.isEmpty(autor || "")) {
+      return res
+        .status(400)
+        .json({
+          error: "Datos inválidos",
+          detalle: "El autor no puede estar vacío",
+        });
+    }
+
+    if (etiquetas && !Array.isArray(etiquetas)) {
+      return res
+        .status(400)
+        .json({
+          error: "Formato inválido",
+          detalle: "etiquetas debe ser un arreglo de strings",
+        });
+    }
+    if (Array.isArray(etiquetas)) {
+      for (const et of etiquetas) {
+        if (validator.isEmpty(et || "")) {
+          return res
+            .status(400)
+            .json({
+              error: "Formato inválido",
+              detalle: "Cada etiqueta debe ser un string no vacío",
+            });
+        }
+      }
+    }
+
     // Si viene archivo (multer lo coloca en req.file)
-    let imagen_url = null, imagen_mime = null, imagen_nom = null;
+    let imagen_url = null,
+      imagen_mime = null,
+      imagen_nom = null;
     if (req.file) {
-      imagen_url  = `/uploads/${req.file.filename}`;
+      imagen_url = `/uploads/${req.file.filename}`;
       imagen_mime = req.file.mimetype;
-      imagen_nom  = req.file.originalname;
+      imagen_nom = req.file.originalname;
     }
 
     const nuevoPost = new Post({
@@ -100,7 +149,6 @@ async function crearPost(req, res) {
     });
   }
 }
-
 
 // POST /posts-many
 async function crearMuchosPosts(req, res) {
@@ -169,9 +217,9 @@ async function actualizarPost(req, res) {
 
     // Si suben nueva imagen, reemplazamos campos
     if (req.file) {
-      datos.imagen_url  = `/uploads/${req.file.filename}`;
+      datos.imagen_url = `/uploads/${req.file.filename}`;
       datos.imagen_mime = req.file.mimetype;
-      datos.imagen_nom  = req.file.originalname;
+      datos.imagen_nom = req.file.originalname;
     }
 
     // Permite borrar imagen enviando borrar_imagen=true
@@ -201,7 +249,6 @@ async function actualizarPost(req, res) {
     });
   }
 }
-
 
 // DELETE /posts/:id
 async function borrarPost(req, res) {
